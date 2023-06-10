@@ -87,6 +87,24 @@ def displayDenoise(row, col, image1, image2, image3):
     plt.show()
 
 
+# Printing accuracy percentage and loss of the filtered image (denoise) compare to the orginal
+def percentage(image1, image2):
+    different = cv2.absdiff(image1, image2)
+    if len(different.shape) > 2 and different.shape[2] == 3:
+        # Convert the difference image to grayscale if it is color (BGR format)
+        gray = cv2.cvtColor(different, cv2.COLOR_BGR2GRAY)
+    else:
+        gray = different
+
+    _, threshold = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    pixels = threshold.shape[0] * threshold.shape[1]
+    changed_pixels = cv2.countNonZero(threshold)
+    accuracy_percent = ((pixels - changed_pixels) / pixels) * 100
+    loss_percent = (changed_pixels / pixels) * 100
+    print("Accuracy in percentage is:" + str(accuracy_percent) + "%")
+    print("Total loss in percentage is:" + str(loss_percent) + "%")
+
+
 # Adding the noise
 noisy_gaussian_image = add_gaussian_noise(image, 0, 50, intensity=0.02)
 noisy_salt_pepper_image = add_salt_pepper_noise(image, 0.01, 0.01, 3)
@@ -98,6 +116,10 @@ cv2.imwrite('noisy_salt_pepper_image.jpg', noisy_salt_pepper_image)
 # Denoise
 gaussian = denoise_gaussian_image(noisy_gaussian_image, 25, 1.0)
 salt_pepper = denoise_salt_pepper_image(noisy_salt_pepper_image, 5)
+
+# Printing the percentages
+percentage(image, gaussian)
+percentage(image, salt_pepper)
 
 # Displaying images
 displayNoisyImages(1, 3, image, noisy_gaussian_image, noisy_salt_pepper_image)
