@@ -80,6 +80,25 @@ def gaussianfilter(image):
     filtered_image = np.abs(np.fft.ifft2(G))
     return filtered_image
 
+def percentage(image1, image2):
+    image1 = np.uint8(image1)
+    image2 = np.uint8(image2)
+    different = cv2.absdiff(image1, image2)
+    if len(different.shape) > 2 and different.shape[2] == 3:
+        # Convert the difference image to grayscale if it is color (BGR format)
+        gray = cv2.cvtColor(different, cv2.COLOR_BGR2GRAY)
+    else:
+        gray = different
+
+    _, threshold = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+    pixels = threshold.shape[0] * threshold.shape[1]
+    changed_pixels = cv2.countNonZero(threshold)
+    accuracy_percent = ((pixels - changed_pixels) / pixels) * 100
+    loss_percent = (changed_pixels / pixels) * 100
+    print("Accuracy in percentage is:" + str(accuracy_percent) + "%")
+    print("Total loss in percentage is:" + str(loss_percent) + "%")
+
+
 
 def displayNoisyImages(row, col, image1, image2, image3):
     fig, axs = plt.subplots(row, col, figsize=(15, 5))
@@ -102,8 +121,16 @@ img2 = lowpassFiltering(noisy2)
 img3 = highpassFiltering(noisy1)
 img4 = highpassFiltering(noisy2)
 img5 = gaussianfilter(noisy1)
-displayNoisyImages(1, 3, image, noisy1, img1)
-displayNoisyImages(1, 3, image, noisy2, img2)
-displayNoisyImages(1, 3, image, noisy1, img3)
-displayNoisyImages(1, 3, image, noisy2, img4)
-displayNoisyImages(1, 3, image, noisy1, img5)
+
+percentage(image, img1)
+percentage(image, img2)
+percentage(image, img3)
+percentage(image, img4)
+percentage(image, img5)
+# displayNoisyImages(1, 3, image, noisy1, img1)
+# displayNoisyImages(1, 3, image, noisy2, img2)
+# displayNoisyImages(1, 3, image, noisy1, img3)
+# displayNoisyImages(1, 3, image, noisy2, img4)
+# displayNoisyImages(1, 3, image, noisy1, img5)
+
+
